@@ -4,6 +4,7 @@ module Main where
 
 import Control.Applicative
 import Control.Monad
+import Control.Monad.Logger
 
 import Data.Maybe
 
@@ -32,6 +33,9 @@ import Control.Monad.Trans.Resource (runResourceT, ResourceT)
 import System.Environment
 import System.Locale
 
+connStr :: ConnectionString
+connStr = "host=localhost dbname=btc-markets user=arpunk password='' port=5432"
+
 share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
   Trade
     ts     UTCTime
@@ -39,6 +43,9 @@ share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
     amount Double
     deriving Show
 |]
+
+runDb :: SqlPersistT (ResourceT (NoLoggingT IO)) a -> IO a
+runDb query = runNoLoggingT $ runResourceT . withPostgresqlConn connStr . runSqlConn . (runMigration migrateAll >>) $ query
 
 main :: IO ()
 main = do

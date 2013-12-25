@@ -30,6 +30,7 @@ executable btc-markets
                      , persistent-postgresql
                      , esqueleto
                      , resourcet
+                     , monad-logger
 
   hs-source-dirs:      src
   default-language:    Haskell2010
