@@ -1,4 +1,5 @@
-{-# LANGUAGE OverloadedStrings, NoMonomorphismRestriction #-}
+{-# LANGUAGE OverloadedStrings, NoMonomorphismRestriction, TemplateHaskell #-}
+{-# LANGUAGE QuasiQuotes, TypeFamilies, FlexibleContexts, GADTs #-}
 module Main where
 
 import Control.Applicative
@@ -20,15 +21,24 @@ import qualified Data.ByteString.Char8 as S
 import qualified Data.ByteString.Unsafe as S
 import Data.ByteString.Lex.Double
 
-import           Control.Monad.Trans.Resource (runResourceT, ResourceT)
+import Database.Persist
+import Database.Persist.Sql
+import Database.Persist.Postgresql
+import Database.Persist.TH (mkPersist, mkMigrate, persistLowerCase,
+                            share, sqlSettings)
+
+import Control.Monad.Trans.Resource (runResourceT, ResourceT)
 
 import System.Environment
 import System.Locale
 
-data Trade = Trade { tradeTs     :: UTCTime
-                   , tradePrice  :: Double
-                   , tradeAmount :: Double
-                   } deriving Show
+share [mkPersist sqlSettings, mkMigrate "migrateAll"] [persistLowerCase|
+  Trade
+    ts     UTCTime
+    price  Double
+    amount Double
+    deriving Show
+|]
 
 main :: IO ()
 main = do
