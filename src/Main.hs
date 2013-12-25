@@ -72,6 +72,7 @@ importHistoricalData file = do
         let ts = fromJust $ parseTime defaultTimeLocale "%s" $ S.unpack ts'
             (price, _) = fromJust $ readDouble price'
             (amount, _) = fromJust $ readDouble $ amount' !! 0
-            trade = Trade ts price amount
+
+        trade <- (runDb . insert) $ Trade ts price amount
 
         putStrLn $ show trade
