@@ -1,11 +1,12 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, TemplateHaskell #-}
 module Market where
+
+import Database.Persist.TH
 
 data Currency = ARS | AUD | BRL | CAD | COP | CHF | CNY | CZK | DDK | EUR
               | GBP | HKD | ILS | INR | JPY | LTC | MXN | NOK | NZD | PLD
               | RUB | SEK | SGD | SSL | THB | USD | XRP | ZAR
-              deriving (Show, Eq, Read)
-
+              deriving (Show, Eq, Read, Bounded, Enum)
 
 data Market = LocalBitcoins | BTCmarkets | MtGox | WeExchange | MercadoBitcoin
             | CanadianVirtualExchange | AsiaNexgen | BTCChina | Bitcurex
@@ -14,7 +15,10 @@ data Market = LocalBitcoins | BTCmarkets | MtGox | WeExchange | MercadoBitcoin
             | FYBSE | Kapiton | FYBSG | VirWox | BitKonan | BitStamp | CampBX
             | ICBIT | BitX | BitMarketEU | WorldBitcoinExchange
             | LibertyBit | RMBTB | BitcashCZ | BitcoinHK | BidExtreme
-            deriving (Show, Eq, Read)
+            deriving (Show, Eq, Read, Bounded, Enum)
+
+derivePersistField "Currency"
+derivePersistField "Market"
 
 marketFile :: Market -> Currency -> FilePath
 marketFile LocalBitcoins c           = "data/localbtc" ++ show c ++ ".csv"
