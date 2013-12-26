@@ -1,5 +1,5 @@
 {-# LANGUAGE OverloadedStrings, NoMonomorphismRestriction, TemplateHaskell #-}
-{-# LANGUAGE QuasiQuotes, TypeFamilies, FlexibleContexts, GADTs #-}
+{-# LANGUAGE QuasiQuotes, TypeFamilies, FlexibleContexts, GADTs, ScopedTypeVariables #-}
 module Main where
 
 import Control.Applicative
@@ -33,6 +33,8 @@ import Control.Monad.Trans.Resource (runResourceT, ResourceT)
 import System.Environment
 import System.Locale
 
+import Market
+
 connStr :: ConnectionString
 connStr = "host=localhost dbname=btc-markets user=arpunk password='' port=5432"
 
@@ -52,18 +54,18 @@ main = do
   args <- getArgs
   
   case args of
-    ["import-trading-data", market] -> do
-      putStrLn $ "importing trades for market " ++ market
+    ["import-trading-data", market, currency] -> do
+      putStrLn $ "importing trades for market " ++ market ++ " (" ++ currency ++ ")"
       case market of
-        "MtGox" -> importHistoricalData "mtgoxUSD.csv"
-        "BitStamp" -> importHistoricalData "bitstampUSD.csv"
+        "MtGox" -> importHistoricalData MtGox (toCurrency currency)
+        "BitStamp" -> importHistoricalData BitStamp (toCurrency currency)
         _ -> error "No such market"
 
     _ -> return ()
 
-importHistoricalData :: FilePath -> IO ()
-importHistoricalData file = do
-  datadump <- BS.readFile $ "data/" ++ file
+importHistoricalData :: Market -> Currency -> IO ()
+importHistoricalData m c = do
+  datadump <- BS.readFile $ marketFile m c
 
   case parseCSV defCSVSettings datadump of
     Left e -> error e
